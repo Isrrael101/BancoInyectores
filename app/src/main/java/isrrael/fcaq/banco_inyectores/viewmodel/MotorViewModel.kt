@@ -1,3 +1,4 @@
+// File: app/src/main/java/isrrael/fcaq/banco_inyectores/viewmodel/MotorViewModel.kt
 package isrrael.fcaq.banco_inyectores.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
+import kotlinx.coroutines.*
 
 class MotorViewModel : ViewModel() {
 
@@ -19,101 +21,83 @@ class MotorViewModel : ViewModel() {
             cylinders = 4,
             firingOrder = listOf(1, 3, 4, 2),
             configuration = MotorConfiguration.INLINE
-        ),
-        Motor(
-            name = "Cummins Serie B (4 cilindros)",
-            cylinders = 4,
-            firingOrder = listOf(1, 3, 4, 2),
-            configuration = MotorConfiguration.INLINE
-        ),
-        Motor(
-            name = "Caterpillar C15 (6 cilindros)",
-            cylinders = 6,
-            firingOrder = listOf(1, 5, 3, 6, 2, 4),
-            configuration = MotorConfiguration.INLINE
-        ),
-        Motor(
-            name = "Detroit Diesel Serie 60 (6 cilindros)",
-            cylinders = 6,
-            firingOrder = listOf(1, 5, 3, 6, 2, 4),
-            configuration = MotorConfiguration.INLINE
-        ),
-        Motor(
-            name = "Scania V8 (8 cilindros)",
-            cylinders = 8,
-            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
-            configuration = MotorConfiguration.V_SHAPED
         )
     )
 
     private val _uiState = MutableStateFlow(
         SimulationState(
             currentMotor = availableMotors[0],
-            cylinderStates = initializeCylinderStates(availableMotors[0])
+            cylinderStates = initializeCylinderStates(availableMotors[0]),
+            frequency = 1f,
+            isRunning = false,
+            customCylinders = 4,
+            customFiringOrder = "1,3,4,2",
+            selectedConfiguration = MotorConfiguration.INLINE
         )
     )
 
     val uiState: StateFlow<SimulationState> = _uiState.asStateFlow()
 
+    private var cyclePosition = 0
+    private var simulationJob: Job? = null
+
     private fun initializeCylinderStates(motor: Motor): List<CylinderState> {
-        return List(motor.cylinders) { index ->
+        val cylinderCount = motor.cylinders
+        return List(cylinderCount) { index ->
+            val initialPhase = (index * 4 / cylinderCount) % 4
             CylinderState(
                 number = index + 1,
-                phase = CylinderPhase.values()[index % 4]
+                phase = CylinderPhase.entries[initialPhase],
+                isActive = initialPhase == 2
             )
         }
     }
 
-    fun updateCylinderCount(count: Int) {
-        if (count in 1..12) {
-            val newFiringOrder = generateDefaultFiringOrder(count)
-            val newMotor = Motor(
-                name = "Motor Personalizado",
-                cylinders = count,
-                firingOrder = newFiringOrder,
-                configuration = if (count <= 6) MotorConfiguration.INLINE else MotorConfiguration.V_SHAPED
-            )
-            setMotor(newMotor)
-        }
-    }
-
-    fun updateFiringOrder(newOrder: String) {
+    fun updateCustomMotor(cylinders: Int, firingOrder: String) {
         try {
-            val orderNumbers = newOrder.split(",").map { it.trim().toInt() }
-            if (isValidFiringOrder(orderNumbers)) {
-                val currentMotor = _uiState.value.currentMotor
-                val newMotor = currentMotor.copy(firingOrder = orderNumbers)
-                setMotor(newMotor)
+            val firingOrderList = firingOrder.split(",")
+                .mapNotNull { it.trim().toIntOrNull() }
+                .filter { it in 1..cylinders }
+                .distinct()
+                .toMutableList()
+
+            while (firingOrderList.size < cylinders) {
+                for (i in 1..cylinders) {
+                    if (!firingOrderList.contains(i)) {
+                        firingOrderList.add(i)
+                    }
+                }
+            }
+
+            val customMotor = Motor(
+                name = "Motor Personalizado",
+                cylinders = cylinders,
+                firingOrder = firingOrderList,
+                configuration = _uiState.value.selectedConfiguration
+            )
+
+            cyclePosition = 0
+            stopSimulation()
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    currentMotor = customMotor,
+                    cylinderStates = initializeCylinderStates(customMotor),
+                    customCylinders = cylinders,
+                    customFiringOrder = firingOrderList.joinToString(","),
+                    isRunning = false
+                )
             }
         } catch (e: Exception) {
-            // Manejar error de formato
+            // Manejar el error si es necesario
         }
     }
 
-    private fun isValidFiringOrder(order: List<Int>): Boolean {
-        val currentCylinders = _uiState.value.currentMotor.cylinders
-        return order.size == currentCylinders &&
-                order.toSet() == (1..currentCylinders).toSet()
-    }
-
-    private fun generateDefaultFiringOrder(cylinderCount: Int): List<Int> {
-        return when (cylinderCount) {
-            4 -> listOf(1, 3, 4, 2)
-            6 -> listOf(1, 5, 3, 6, 2, 4)
-            8 -> listOf(1, 5, 4, 2, 6, 3, 7, 8)
-            12 -> listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9)
-            else -> (1..cylinderCount).toList() // Orden secuencial para otros casos
-        }
-    }
-
-    fun setMotor(motor: Motor) {
+    fun setConfiguration(configuration: MotorConfiguration) {
         _uiState.update { currentState ->
-            currentState.copy(
-                currentMotor = motor,
-                cylinderStates = initializeCylinderStates(motor),
-                isRunning = false
-            )
+            currentState.copy(selectedConfiguration = configuration)
         }
+        updateCustomMotor(_uiState.value.customCylinders, _uiState.value.customFiringOrder)
     }
 
     fun setFrequency(newFrequency: Float) {
@@ -124,34 +108,72 @@ class MotorViewModel : ViewModel() {
         _uiState.update { it.copy(isRunning = !it.isRunning) }
         if (_uiState.value.isRunning) {
             startSimulation()
+        } else {
+            stopSimulation()
         }
     }
 
+    private fun stopSimulation() {
+        simulationJob?.cancel()
+        simulationJob = null
+    }
+
     private fun startSimulation() {
-        viewModelScope.launch {
-            while (_uiState.value.isRunning) {
-                val delayTime = (1000 / (_uiState.value.frequency * 2)).roundToInt()
-                delay(delayTime.toLong())
-                updateCylinderStates()
+        stopSimulation()
+        cyclePosition = 0
+        simulationJob = viewModelScope.launch {
+            while (isActive && _uiState.value.isRunning) {
+                try {
+                    val baseDelay = (1000 / _uiState.value.frequency).roundToInt()
+                    // Aseguramos un delay adecuado para visualizar el ciclo
+                    delay(baseDelay.toLong().coerceAtLeast(200))
+                    updateCylinderStates()
+                } catch (e: Exception) {
+                    stopSimulation()
+                    break
+                }
             }
         }
     }
 
     private fun updateCylinderStates() {
-        _uiState.update { currentState ->
-            val updatedStates = currentState.cylinderStates.map { cylinderState ->
-                val currentPhaseIndex = CylinderPhase.values().indexOf(cylinderState.phase)
-                val nextPhaseIndex = (currentPhaseIndex + 1) % 4
-                cylinderState.copy(
-                    phase = CylinderPhase.values()[nextPhaseIndex],
-                    isActive = currentState.currentMotor.firingOrder.indexOf(cylinderState.number) == currentPhaseIndex
-                )
+        try {
+            _uiState.update { currentState ->
+                val firingOrder = currentState.currentMotor.firingOrder
+                val cylinderCount = firingOrder.size
+
+                // Calculamos la fase base para cada posición en el orden de encendido
+                val phaseOffsets = firingOrder.mapIndexed { index, cylinderNumber ->
+                    val offset = (index * 4 / cylinderCount)
+                    cylinderNumber to ((cyclePosition + offset) % 4)
+                }.toMap()
+
+                val updatedStates = currentState.cylinderStates.map { cylinder ->
+                    // Obtenemos la fase correspondiente para este cilindro
+                    val currentPhase = phaseOffsets[cylinder.number] ?: 0
+
+                    cylinder.copy(
+                        phase = CylinderPhase.entries[currentPhase],
+                        isActive = currentPhase == 2  // 2 = COMBUSTION
+                    )
+                }
+
+                // Avanzamos el ciclo
+                cyclePosition = (cyclePosition + 1) % 4
+
+                currentState.copy(cylinderStates = updatedStates)
             }
-            currentState.copy(cylinderStates = updatedStates)
+        } catch (e: Exception) {
+            stopSimulation()
         }
     }
 
     fun calculateRPM(): Float {
         return _uiState.value.frequency * 60f / _uiState.value.currentMotor.cylinders
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopSimulation()
     }
 }

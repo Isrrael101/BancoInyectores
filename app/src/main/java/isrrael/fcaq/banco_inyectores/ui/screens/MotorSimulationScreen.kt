@@ -1,22 +1,20 @@
 // File: app/src/main/java/isrrael/fcaq/banco_inyectores/ui/screens/MotorSimulationScreen.kt
 package isrrael.fcaq.banco_inyectores.ui.screens
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.dp
-import isrrael.fcaq.banco_inyectores.model.CylinderPhase
-import isrrael.fcaq.banco_inyectores.model.CylinderState
+import androidx.compose.ui.unit.sp
+import isrrael.fcaq.banco_inyectores.model.MotorConfiguration
 import isrrael.fcaq.banco_inyectores.viewmodel.MotorViewModel
+import isrrael.fcaq.banco_inyectores.ui.components.FiringOrderInput
+import isrrael.fcaq.banco_inyectores.ui.components.InjectorVisualization
+import isrrael.fcaq.banco_inyectores.ui.components.CycleTimingTable
+import isrrael.fcaq.banco_inyectores.model.CylinderPhase
+import isrrael.fcaq.banco_inyectores.ui.components.ColorLegend
 
 @Composable
 fun MotorSimulationScreen(viewModel: MotorViewModel) {
@@ -25,112 +23,165 @@ fun MotorSimulationScreen(viewModel: MotorViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
         // Panel de Control
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 4.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(8.dp)
             ) {
                 Text(
-                    text = "Control del Motor",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = "Configuración del Motor",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Control de frecuencia
-                Text(
-                    text = "Frecuencia: ${uiState.frequency.toInt()} Hz",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Slider(
-                    value = uiState.frequency,
-                    onValueChange = { viewModel.setFrequency(it) },
-                    valueRange = 0.1f..100f,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Columna izquierda
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Cilindros: ${uiState.customCylinders}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Slider(
+                            value = uiState.customCylinders.toFloat(),
+                            onValueChange = {
+                                viewModel.updateCustomMotor(
+                                    it.toInt(),
+                                    uiState.customFiringOrder
+                                )
+                            },
+                            valueRange = 1f..12f,
+                            steps = 11,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
 
-                // Display RPM
-                Text(
-                    text = "RPM: ${viewModel.calculateRPM().toInt()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Columna derecha
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Frecuencia: ${uiState.frequency.toInt()} Hz",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Slider(
+                            value = uiState.frequency,
+                            onValueChange = { newValue ->
+                                viewModel.setFrequency(newValue.toInt().toFloat())
+                            },
+                            valueRange = 1f..100f,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                }
+
+                // Configuración y RPM
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        MotorConfiguration.entries.forEach { config ->
+                            RadioButton(
+                                selected = uiState.selectedConfiguration == config,
+                                onClick = { viewModel.setConfiguration(config) },
+                                modifier = Modifier.size(30.dp)
+                            )
+                            Text(
+                                text = when(config) {
+                                    MotorConfiguration.INLINE -> "Línea"
+                                    MotorConfiguration.V_SHAPED -> "V"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "RPM: ${viewModel.calculateRPM().toInt()}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                // Orden de encendido y matriz de selección
+                FiringOrderInput(
+                    currentOrder = uiState.customFiringOrder,
+                    maxCylinders = uiState.customCylinders,
+                    onOrderChange = { newOrder ->
+                        viewModel.updateCustomMotor(
+                            uiState.customCylinders,
+                            newOrder
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 )
 
                 // Botón de inicio/parada
                 Button(
                     onClick = { viewModel.toggleSimulation() },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .height(40.dp)
                 ) {
-                    Text(if (uiState.isRunning) "Detener" else "Iniciar")
+                    Text(
+                        if (uiState.isRunning) "Detener" else "Iniciar",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
 
-        // Visualización de cilindros
-        InjectorVisualization(
-            cylinderStates = uiState.cylinderStates,
+        // Visualización de cilindros y leyenda
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
-        )
-    }
-}
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            InjectorVisualization(
+                cylinderStates = uiState.cylinderStates,
+                configuration = uiState.selectedConfiguration,
+                modifier = Modifier.fillMaxSize()
+            )
 
-@Composable
-fun InjectorVisualization(
-    cylinderStates: List<CylinderState>,
-    modifier: Modifier = Modifier
-) {
-    Canvas(modifier = modifier) {
-        val cylinderWidth = size.width / (cylinderStates.size + 1)
-        val cylinderHeight = cylinderWidth * 2
-        val startY = (size.height - cylinderHeight) / 2
-
-        cylinderStates.forEachIndexed { index, state ->
-            val startX = cylinderWidth * (index + 0.5f)
-            drawInjector(
-                centerX = startX,
-                centerY = startY + (cylinderHeight / 2),
-                width = cylinderWidth * 0.8f,
-                height = cylinderHeight,
-                state = state
+            // Leyenda de colores en la esquina superior derecha
+            ColorLegend(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .width(160.dp)
             )
         }
-    }
-}
 
-private fun DrawScope.drawInjector(
-    centerX: Float,
-    centerY: Float,
-    width: Float,
-    height: Float,
-    state: CylinderState
-) {
-    // Cuerpo del inyector
-    drawRect(
-        color = Color(state.phase.getColor()),
-        topLeft = Offset(centerX - width/2, centerY - height/2),
-        size = Size(width, height)
-    )
-
-    // Número del cilindro
-    drawCircle(
-        color = Color.White,
-        radius = width * 0.2f,
-        center = Offset(centerX, centerY - height * 0.3f)
-    )
-
-    // Efecto de spray cuando está en fase de combustión
-    if (state.phase == CylinderPhase.COMBUSTION) {
-        drawRect(
-            color = Color.Yellow,
-            topLeft = Offset(centerX - width/6, centerY + height/2),
-            size = Size(width/3, height/4)
-        )
+        // En la parte inferior de la pantalla
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)  // Altura fija para la tabla
+                .padding(horizontal = 4.dp, vertical = 2.dp)
+        ) {
+            CycleTimingTable(
+                numberOfCylinders = uiState.customCylinders,
+                firingOrder = uiState.currentMotor.firingOrder,
+                cylinderStates = uiState.cylinderStates,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }

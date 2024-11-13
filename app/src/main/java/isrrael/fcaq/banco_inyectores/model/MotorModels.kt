@@ -23,15 +23,8 @@ enum class CylinderPhase {
     fun getColor(): Long = when(this) {
         INTAKE -> 0xFF90EE90      // Verde claro para admisión
         COMPRESSION -> 0xFFFFB6C1  // Rosa claro para compresión
-        COMBUSTION -> 0xFFFF6B6B   // Rojo para combustión
+        COMBUSTION -> 0xFFFF6B6B   // Rojo para expansión
         EXHAUST -> 0xFF87CEEB      // Azul claro para escape
-    }
-
-    fun getDescription(): String = when(this) {
-        INTAKE -> "Admisión"
-        COMPRESSION -> "Compresión"
-        COMBUSTION -> "Explosión"
-        EXHAUST -> "Escape"
     }
 }
 
@@ -39,5 +32,8 @@ data class SimulationState(
     val currentMotor: Motor,
     val cylinderStates: List<CylinderState>,
     val frequency: Float = 1f,
-    val isRunning: Boolean = false
+    val isRunning: Boolean = false,
+    val customCylinders: Int = 4,
+    val customFiringOrder: String = "1,3,4,2",
+    val selectedConfiguration: MotorConfiguration = MotorConfiguration.INLINE
 )
