@@ -7,14 +7,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import isrrael.fcaq.banco_inyectores.model.MotorConfiguration
 import isrrael.fcaq.banco_inyectores.viewmodel.MotorViewModel
 import isrrael.fcaq.banco_inyectores.ui.components.FiringOrderInput
 import isrrael.fcaq.banco_inyectores.ui.components.InjectorVisualization
 import isrrael.fcaq.banco_inyectores.ui.components.CycleTimingTable
-import isrrael.fcaq.banco_inyectores.model.CylinderPhase
 import isrrael.fcaq.banco_inyectores.ui.components.ColorLegend
+import isrrael.fcaq.banco_inyectores.ui.components.MotorSelector
 
 @Composable
 fun MotorSimulationScreen(viewModel: MotorViewModel) {
@@ -34,6 +33,15 @@ fun MotorSimulationScreen(viewModel: MotorViewModel) {
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
+                // Selector de motor comercial
+                MotorSelector(
+                    availableMotors = viewModel.getAvailableMotors(),
+                    onMotorSelected = viewModel::selectCommercialMotor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                )
+
                 Text(
                     text = "Configuración del Motor",
                     style = MaterialTheme.typography.titleMedium,
@@ -164,8 +172,8 @@ fun MotorSimulationScreen(viewModel: MotorViewModel) {
             ColorLegend(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .width(160.dp)
+                    .padding(end = 16.dp, top = 8.dp)
+                    .width(80.dp)
             )
         }
 

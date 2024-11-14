@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -32,7 +33,7 @@ fun CycleTimingTable(
         Column(
             modifier = Modifier
                 .padding(2.dp)
-                .fillMaxWidth()
+                .fillMaxSize()
         ) {
             // Contenedor con scroll para la tabla
             Column(
@@ -45,13 +46,22 @@ fun CycleTimingTable(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                        .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    TableCell("Cil.", 0.15f, true)
-                    TableCell("Admisión", 0.2125f, true)
-                    TableCell("Compresión", 0.2125f, true)
-                    TableCell("Explosión", 0.2125f, true)
-                    TableCell("Escape", 0.2125f, true)
+                    repeat(5) { index ->
+                        TableCell(
+                            text = when(index) {
+                                0 -> "Cil."
+                                1 -> "Adm."
+                                2 -> "Com."
+                                3 -> "Exp."
+                                else -> "Esc."
+                            },
+                            weight = 0.2f,
+                            isHeader = true
+                        )
+                    }
                 }
 
                 // Filas de cilindros
@@ -60,15 +70,17 @@ fun CycleTimingTable(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                            .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        TableCell("Cil. $i", 0.15f)
+                        // Número de cilindro
+                        TableCell(text = "$i", weight = 0.2f)
 
-                        // Colorear la celda actual según la fase del cilindro
+                        // Estados del cilindro
                         CylinderPhase.entries.forEach { phase ->
                             TableCell(
                                 text = "",
-                                weight = 0.2125f,
+                                weight = 0.2f,
                                 backgroundColor = if (cylinderState?.phase == phase) {
                                     Color(phase.getColor())
                                 } else {
@@ -93,16 +105,16 @@ private fun TableCell(
     Box(
         modifier = Modifier
             .fillMaxWidth(weight)
-            .height(16.dp) // Altura fija para las celdas
+            .height(18.dp)
             .background(backgroundColor.copy(alpha = 0.3f))
             .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-            .padding(1.dp)
+            .padding(1.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            fontSize = 6.sp,
+            fontSize = 10.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1
         )

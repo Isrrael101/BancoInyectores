@@ -21,8 +21,217 @@ class MotorViewModel : ViewModel() {
             cylinders = 4,
             firingOrder = listOf(1, 3, 4, 2),
             configuration = MotorConfiguration.INLINE
+        ),
+        // Motores en Línea de 4 Cilindros
+        Motor(
+            name = "Cummins Serie B4.5",
+            cylinders = 4,
+            firingOrder = listOf(1, 3, 4, 2),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "John Deere 4045",
+            cylinders = 4,
+            firingOrder = listOf(1, 3, 4, 2),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Perkins 1104",
+            cylinders = 4,
+            firingOrder = listOf(1, 3, 4, 2),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Deutz TCD 4.1",
+            cylinders = 4,
+            firingOrder = listOf(1, 3, 4, 2),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Kubota V3800",
+            cylinders = 4,
+            firingOrder = listOf(1, 3, 4, 2),
+            configuration = MotorConfiguration.INLINE
+        ),
+
+        // Motores en Línea de 6 Cilindros
+        Motor(
+            name = "Caterpillar C15",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Detroit Diesel DD15",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Cummins ISX",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Volvo D13",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "MAN D2676",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Scania DC13",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+
+        // Motores V8
+        Motor(
+            name = "Scania DC16 V8",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "MAN D2868 V8",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "Detroit Diesel 8V92",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "Deutz V8 1015",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "MTU 8V 2000",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 4, 2, 6, 3, 7, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+
+        // Motores V10
+        Motor(
+            name = "MAN D2840 V10",
+            cylinders = 10,
+            firingOrder = listOf(1, 6, 5, 10, 2, 7, 3, 8, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "Deutz V10 1015",
+            cylinders = 10,
+            firingOrder = listOf(1, 6, 5, 10, 2, 7, 3, 8, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+
+        // Motores V12
+        Motor(
+            name = "MTU 12V 2000",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "Caterpillar C27",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "MTU 12V 4000",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+
+        // Motores Industriales Especiales
+        Motor(
+            name = "Wärtsilä 6L20",
+            cylinders = 6,
+            firingOrder = listOf(1, 4, 2, 6, 3, 5),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "ABC 8DZC",
+            cylinders = 8,
+            firingOrder = listOf(1, 3, 7, 4, 8, 6, 2, 5),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "EMD 8-710",
+            cylinders = 8,
+            firingOrder = listOf(1, 5, 3, 7, 4, 8, 2, 6),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "GE 7FDL12",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 7, 4, 3, 10, 6, 9, 2, 11, 5, 8),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "MaK 6M25",
+            cylinders = 6,
+            firingOrder = listOf(1, 5, 3, 6, 2, 4),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Bergen B32:40",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
+        ),
+        Motor(
+            name = "Rolls-Royce C25:33L",
+            cylinders = 8,
+            firingOrder = listOf(1, 4, 7, 2, 5, 8, 3, 6),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "Yanmar 6EY22",
+            cylinders = 6,
+            firingOrder = listOf(1, 4, 2, 6, 3, 5),
+            configuration = MotorConfiguration.INLINE
+        ),
+        Motor(
+            name = "MAN 32/44CR",
+            cylinders = 12,
+            firingOrder = listOf(1, 12, 5, 8, 3, 10, 6, 7, 2, 11, 4, 9),
+            configuration = MotorConfiguration.V_SHAPED
         )
     )
+
+    // Agregar getter para los motores disponibles
+    fun getAvailableMotors() = availableMotors.filter { it.name != "Motor Personalizado" }
+
+    // Agregar función para seleccionar motor comercial
+    fun selectCommercialMotor(motor: Motor) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                currentMotor = motor,
+                cylinderStates = initializeCylinderStates(motor),
+                customCylinders = motor.cylinders,
+                customFiringOrder = motor.firingOrder.joinToString(","),
+                selectedConfiguration = motor.configuration,
+                isRunning = false
+            )
+        }
+        cyclePosition = 0
+    }
 
     private val _uiState = MutableStateFlow(
         SimulationState(
